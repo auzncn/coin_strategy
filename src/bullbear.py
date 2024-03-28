@@ -40,14 +40,18 @@ def send_message(msg):
                   headers=headers, data=json.dumps(data))
 
 
-@retry(tries=100, delay=5)
+@retry(tries=3, delay=10)
+def fetch(symbol, timeframe):
+    ohlcvs = exchange.fetch_ohlcv(symbol, timeframe, limit=400)
+    return ohlcvs
+
+
 def job():
     for symbol in usdt_pairs:
         print("开始获取"+symbol)
         time.sleep(exchange.rateLimit / 1000)
         timeframe = '4h'
-        ohlcvs = exchange.fetch_ohlcv(symbol, timeframe, limit=400)
-
+        ohlcvs = fetch(symbol, timeframe)
         # 将 OHLCV 数据转换为 DataFrame
         columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
         df = pd.DataFrame(ohlcvs, columns=columns)
